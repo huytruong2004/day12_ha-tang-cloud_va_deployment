@@ -4,7 +4,7 @@ services:
     runtime: docker
     rootDir: 06-lab-complete
     region: singapore
-    plan: starter
+    plan: free
     healthCheckPath: /health
     autoDeploy: true
     envVars:
