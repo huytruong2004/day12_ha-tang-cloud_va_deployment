@@ -57,17 +57,23 @@
 
 ### Exercise 2.3: Image size comparison
 
-_TODO — run after Docker Desktop is started:_
-
 ```bash
-docker build -f 02-docker/develop/Dockerfile -t agent-develop .
-docker build -f 02-docker/production/Dockerfile -t agent-production .
-docker images | grep agent-
+$ docker build -f 02-docker/develop/Dockerfile -t agent-develop .
+$ docker build -f 02-docker/production/Dockerfile -t agent-production .
+$ docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}" | grep agent-
+agent-production   latest    186MB
+agent-develop      latest    1.16GB
 ```
 
-- Develop: _TODO_ MB
-- Production: _TODO_ MB
-- Difference: _TODO_ %
+- **Develop**: 1160 MB (`python:3.11` full base + apt cache + pip cache + build tools all in one layer)
+- **Production**: 186 MB (`python:3.11-slim` runtime only; gcc + libpq-dev confined to discarded builder stage)
+- **Difference**: ~84% smaller (saved ~974 MB)
+
+Why production is so much smaller:
+- `python:3.11-slim` (~120 MB) instead of `python:3.11` (~1 GB)
+- `gcc`, `libpq-dev`, apt cache live only in the builder stage and are dropped
+- `pip install --no-cache-dir` skips the wheel cache; `--user` keeps site-packages portable
+- Source code is copied last so the heavy `pip install` layer stays cached
 
 ---
 
