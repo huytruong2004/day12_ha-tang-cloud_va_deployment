@@ -69,19 +69,19 @@ def check_rate_limit(key: str):
 # ─────────────────────────────────────────────────────────
 # Simple Cost Guard
 # ─────────────────────────────────────────────────────────
-_daily_cost = 0.0
-_cost_reset_day = time.strftime("%Y-%m-%d")
+_monthly_cost = 0.0
+_cost_reset_month = time.strftime("%Y-%m")
 
 def check_and_record_cost(input_tokens: int, output_tokens: int):
-    global _daily_cost, _cost_reset_day
-    today = time.strftime("%Y-%m-%d")
-    if today != _cost_reset_day:
-        _daily_cost = 0.0
-        _cost_reset_day = today
-    if _daily_cost >= settings.daily_budget_usd:
-        raise HTTPException(503, "Daily budget exhausted. Try tomorrow.")
+    global _monthly_cost, _cost_reset_month
+    this_month = time.strftime("%Y-%m")
+    if this_month != _cost_reset_month:
+        _monthly_cost = 0.0
+        _cost_reset_month = this_month
+    if _monthly_cost >= settings.monthly_budget_usd:
+        raise HTTPException(503, "Monthly budget exhausted. Try next month.")
     cost = (input_tokens / 1000) * 0.00015 + (output_tokens / 1000) * 0.0006
-    _daily_cost += cost
+    _monthly_cost += cost
 
 # ─────────────────────────────────────────────────────────
 # Auth
@@ -259,9 +259,9 @@ def metrics(_key: str = Depends(verify_api_key)):
         "uptime_seconds": round(time.time() - START_TIME, 1),
         "total_requests": _request_count,
         "error_count": _error_count,
-        "daily_cost_usd": round(_daily_cost, 4),
-        "daily_budget_usd": settings.daily_budget_usd,
-        "budget_used_pct": round(_daily_cost / settings.daily_budget_usd * 100, 1),
+        "monthly_cost_usd": round(_monthly_cost, 4),
+        "monthly_budget_usd": settings.monthly_budget_usd,
+        "budget_used_pct": round(_monthly_cost / settings.monthly_budget_usd * 100, 1),
     }
 
 
