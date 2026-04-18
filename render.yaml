@@ -1,4 +1,10 @@
 services:
+  - type: keyvalue
+    name: ai-agent-redis
+    region: singapore
+    plan: free
+    ipAllowList: []
+
   - type: web
     name: ai-agent-production
     runtime: docker
@@ -22,3 +28,8 @@ services:
         value: "10.0"
       - key: RATE_LIMIT_PER_MINUTE
         value: "10"
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: ai-agent-redis
+          property: connectionString
